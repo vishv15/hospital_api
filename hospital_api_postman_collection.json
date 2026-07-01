@@ -1,0 +1,460 @@
+{
+	"info": {
+		"_postman_id": "4020a561-137b-4028-a46c-c90a2a514dcd",
+		"name": "Hospital Management Backend API",
+		"description": "Postman collection for testing the Hospital Management Backend API with hierarchy-based role permissions (RBAC).",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Authentication",
+			"item": [
+				{
+					"name": "Obtain JWT Token",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"if (jsonData.access) {",
+									"    pm.collectionVariables.set(\"token\", jsonData.access);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"superadmin\",\n    \"password\": \"superadminpassword\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/token/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"token",
+								""
+							]
+						},
+						"description": "Get JWT tokens. Sets collection-wide 'token' variable automatically upon success."
+					},
+					"response": []
+				},
+				{
+					"name": "Refresh JWT Token",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"refresh\": \"{{refresh_token}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/token/refresh/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"token",
+								"refresh",
+								""
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Dashboard",
+			"item": [
+				{
+					"name": "Get Dashboard Metrics",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/dashboard/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"dashboard",
+								""
+							]
+						},
+						"description": "Calculates dashboard metrics according to request user's hierarchy."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Headquarters",
+			"item": [
+				{
+					"name": "List Headquarters",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/headquarters/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"headquarters",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Headquarters",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Baroda HQ\",\n    \"location\": \"Vadodara, Gujarat\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/headquarters/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"headquarters",
+								""
+							]
+						},
+						"description": "Allowed for Super Admin only."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Sub Headquarters",
+			"item": [
+				{
+					"name": "List Sub Headquarters",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/sub-headquarters/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"sub-headquarters",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Sub Headquarters",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Bapunagar Sub HQ\",\n    \"headquarters\": 1,\n    \"location\": \"Bapunagar, Ahmedabad\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/sub-headquarters/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"sub-headquarters",
+								""
+							]
+						},
+						"description": "Allowed for Super Admin and HQ Admin (within their own HQ)."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Doctors",
+			"item": [
+				{
+					"name": "List Doctors",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/doctors/?search=Sharma",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"doctors",
+								""
+							],
+							"query": [
+								{
+									"key": "search",
+									"value": "Sharma"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Doctor",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Mehta\",\n    \"specialization\": \"Oncologist\",\n    \"phone\": \"9876543220\",\n    \"email\": \"mehta@hospital.com\",\n    \"headquarters\": 1,\n    \"sub_headquarters\": 1,\n    \"assigned_mrs\": [\n        5\n    ]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/doctors/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"doctors",
+								""
+							]
+						},
+						"description": "Allowed for Super Admin, HQ Admin, HQ Staff, Sub HQ Staff inside their assigned scopes."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Visits",
+			"item": [
+				{
+					"name": "List Visits (Reports Filter)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/visits/?hq=1&status=PENDING&start_date=2026-07-01",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"visits",
+								""
+							],
+							"query": [
+								{
+									"key": "hq",
+									"value": "1"
+								},
+								{
+									"key": "status",
+									"value": "PENDING"
+								},
+								{
+									"key": "start_date",
+									"value": "2026-07-01"
+								}
+							]
+						},
+						"description": "Supports Reports with Filters (hq, sub_hq, mr, doctor, status, start_date, end_date)."
+					},
+					"response": []
+				},
+				{
+					"name": "Create Visit (Submit Daily Report)",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"doctor\": 1,\n    \"date\": \"2026-07-01\",\n    \"status\": \"COMPLETED\",\n    \"notes\": \"Dr. Sharma recommended our new product lines!\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/visits/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"visits",
+								""
+							]
+						},
+						"description": "MR can submit daily visit reports for doctors assigned to them."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Users",
+			"item": [
+				{
+					"name": "Get Current User Profile",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/users/me/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"users",
+								"me",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "List Users",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/users/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"users",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create User",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"new_mr_user\",\n    \"password\": \"new_mr_user_pass\",\n    \"email\": \"new_mr@hospital.com\",\n    \"role\": \"MR\",\n    \"headquarters\": 1,\n    \"sub_headquarters\": 1\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/users/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"users",
+								""
+							]
+						},
+						"description": "Allowed for Super Admin and HQ Admin (with restrictions)."
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{token}}",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://127.0.0.1:8000",
+			"type": "string"
+		},
+		{
+			"key": "token",
+			"value": "",
+			"type": "string"
+		}
+	]
+}
