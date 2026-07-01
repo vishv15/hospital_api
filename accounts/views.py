@@ -24,10 +24,10 @@ class UserViewSet(viewsets.ModelViewSet):
         if user.role == Role.SUPER_ADMIN:
             return User.objects.all()
         elif user.role == Role.HQ_ADMIN:
-            # HQ Admin can see all users in their HQ except Super Admins
+   
             return User.objects.filter(headquarters=user.headquarters).exclude(role=Role.SUPER_ADMIN)
         else:
-            # Others can only see themselves
+           
             return User.objects.filter(id=user.id)
 
     @action(detail=False, methods=['get'], permission_classes=[permissions.IsAuthenticated])

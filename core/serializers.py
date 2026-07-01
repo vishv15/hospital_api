@@ -24,11 +24,11 @@ class SubHeadquartersSerializer(serializers.ModelSerializer):
         user = request.user
         hq = attrs.get('headquarters')
 
-        # HQ Admin can only create/update SubHQs for their assigned HQ
+        
         if user.role == Role.HQ_ADMIN:
             if hq and hq != user.headquarters:
                 raise serializers.ValidationError({"headquarters": "You can only manage sub headquarters for your own headquarters."})
-            # Force assigned HQ
+
             attrs['headquarters'] = user.headquarters
 
         return attrs
@@ -57,36 +57,35 @@ class DoctorSerializer(serializers.ModelSerializer):
         sub_hq = attrs.get('sub_headquarters')
         assigned_mrs = attrs.get('assigned_mrs', [])
 
-        # Validate that sub_hq belongs to hq if both are provided
+        
         if sub_hq and hq and sub_hq.headquarters != hq:
             raise serializers.ValidationError({"sub_headquarters": "The sub headquarters must belong to the selected headquarters."})
 
-        # Enforce scope based on role
         if user.role == Role.HQ_ADMIN:
-            # Force doctor's HQ to match Admin's HQ
+           
             attrs['headquarters'] = user.headquarters
             if sub_hq and sub_hq.headquarters != user.headquarters:
                 raise serializers.ValidationError({"sub_headquarters": "The sub headquarters must belong to your headquarters."})
             
         elif user.role == Role.HQ_STAFF:
-            # Force doctor's HQ to match Staff's HQ
+            
             attrs['headquarters'] = user.headquarters
             if sub_hq and sub_hq.headquarters != user.headquarters:
                 raise serializers.ValidationError({"sub_headquarters": "The sub headquarters must belong to your headquarters."})
             
         elif user.role == Role.SUB_HQ_STAFF:
-            # Force doctor's HQ and SubHQ to match Staff's assigned SubHQ
+            
             if not user.sub_headquarters:
                 raise serializers.ValidationError({"detail": "Sub HQ Staff must be assigned to a sub headquarters first."})
             attrs['headquarters'] = user.sub_headquarters.headquarters
             attrs['sub_headquarters'] = user.sub_headquarters
 
-        # Validate that all assigned MRs are actually MRs and belong to the correct HQ
+        
         for mr in assigned_mrs:
             if mr.role != Role.MR:
                 raise serializers.ValidationError({"assigned_mrs": f"User {mr.username} is not a Medical Representative (MR)."})
             
-            # Non-super admin can only assign MRs from their own HQ
+           
             if user.role != Role.SUPER_ADMIN:
                 if mr.headquarters != user.headquarters:
                     raise serializers.ValidationError({"assigned_mrs": f"MR {mr.username} does not belong to your headquarters."})
@@ -95,6 +94,10 @@ class DoctorSerializer(serializers.ModelSerializer):
 
 
 class VisitSerializer(serializers.ModelSerializer):
+    mr = serializers.PrimaryKeyRelatedField(
+        queryset=User.objects.filter(role=Role.MR),
+        required=False
+    )
     mr_details = UserSerializer(source='mr', read_only=True)
     doctor_name = serializers.CharField(source='doctor.name', read_only=True)
     doctor_specialization = serializers.CharField(source='doctor.specialization', read_only=True)
@@ -116,22 +119,22 @@ class VisitSerializer(serializers.ModelSerializer):
         mr = attrs.get('mr')
         doctor = attrs.get('doctor')
 
-        # If user is MR, they can only create/update visits for themselves
+      
         if user.role == Role.MR:
             attrs['mr'] = user
             mr = user
-            
-            # Check if doctor is assigned to this MR
-            # An MR can only mark visits for doctors assigned to them
+        
             if doctor and not doctor.assigned_mrs.filter(id=user.id).exists():
                 raise serializers.ValidationError({"doctor": "You can only mark visits for doctors assigned to you."})
         
         else:
-            # If creator is not MR, we must ensure the assigned mr is actually an MR
-            if mr and mr.role != Role.MR:
+            
+            if not mr:
+                raise serializers.ValidationError({"mr": "This field is required for admin/staff users."})
+            if mr.role != Role.MR:
                 raise serializers.ValidationError({"mr": "Assigned user is not a Medical Representative."})
 
-            # Check hierarchy rules for non-super admins creating visits
+            
             if user.role == Role.HQ_ADMIN:
                 if mr and mr.headquarters != user.headquarters:
                     raise serializers.ValidationError({"mr": "The MR must belong to your headquarters."})

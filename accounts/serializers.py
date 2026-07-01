@@ -38,28 +38,28 @@ class UserCreateUpdateSerializer(serializers.ModelSerializer):
         hq = attrs.get('headquarters')
         sub_hq = attrs.get('sub_headquarters')
 
-        # Super admin can create any user
+       
         if creator.role == Role.SUPER_ADMIN:
-            # For SubHQ Staff and MR, if sub_hq is provided, make sure it matches their HQ
+            
             if sub_hq and hq and sub_hq.headquarters != hq:
                 raise serializers.ValidationError({"sub_headquarters": "The sub headquarters must belong to the selected headquarters."})
             return attrs
 
-        # HQ Admin restrictions
+
         if creator.role == Role.HQ_ADMIN:
-            # Cannot create Super Admin or HQ Admin
+            
             if role in [Role.SUPER_ADMIN, Role.HQ_ADMIN]:
                 raise serializers.ValidationError({"role": "HQ Admin cannot create Super Admin or HQ Admin users."})
             
-            # Must assign users to the same HQ
+      
             if hq and hq != creator.headquarters:
                 raise serializers.ValidationError({"headquarters": "You can only assign users to your own headquarters."})
             
-            # If sub hq is provided, it must belong to their HQ
+           
             if sub_hq and sub_hq.headquarters != creator.headquarters:
                 raise serializers.ValidationError({"sub_headquarters": "The sub headquarters must belong to your headquarters."})
             
-            # Force target user's HQ to match creator's HQ
+    
             attrs['headquarters'] = creator.headquarters
 
         return attrs
@@ -68,7 +68,7 @@ class UserCreateUpdateSerializer(serializers.ModelSerializer):
         if 'password' in validated_data:
             validated_data['password'] = make_password(validated_data['password'])
         else:
-            # Default password is set to username if none is supplied
+        
             validated_data['password'] = make_password(validated_data.get('username'))
         return super().create(validated_data)
 

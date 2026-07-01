@@ -49,7 +49,7 @@ class SubHeadquartersViewSet(viewsets.ModelViewSet):
         elif user.role in [Role.SUB_HQ_STAFF, Role.MR]:
             if user.sub_headquarters:
                 return SubHeadquarters.objects.filter(id=user.sub_headquarters.id)
-            elif user.headquarters: # MR assigned to HQ level could see all SubHQs in HQ
+            elif user.headquarters: 
                 return SubHeadquarters.objects.filter(headquarters=user.headquarters)
             return SubHeadquarters.objects.none()
         return SubHeadquarters.objects.none()
@@ -69,7 +69,7 @@ class DoctorViewSet(viewsets.ModelViewSet):
         if user.role == Role.SUPER_ADMIN:
             return Doctor.objects.all()
         elif user.role in [Role.HQ_ADMIN, Role.HQ_STAFF]:
-            # Doctors directly at HQ level or under SubHQs of their HQ
+            
             return Doctor.objects.filter(
                 Q(headquarters=user.headquarters) | 
                 Q(sub_headquarters__headquarters=user.headquarters)
@@ -79,7 +79,7 @@ class DoctorViewSet(viewsets.ModelViewSet):
                 return Doctor.objects.filter(sub_headquarters=user.sub_headquarters)
             return Doctor.objects.none()
         elif user.role == Role.MR:
-            # MR sees doctors explicitly assigned to them
+            
             return Doctor.objects.filter(assigned_mrs=user)
         return Doctor.objects.none()
 
@@ -120,7 +120,7 @@ class DashboardAPIView(APIView):
         user = request.user
         today = timezone.localtime(timezone.now()).date()
 
-        # Count items based on user role and hierarchy
+       
         if user.role == Role.SUPER_ADMIN:
             total_hqs = Headquarters.objects.count()
             total_sub_hqs = SubHeadquarters.objects.count()

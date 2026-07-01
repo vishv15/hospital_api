@@ -14,8 +14,7 @@ class User(AbstractUser):
         choices=Role.choices,
         default=Role.MR
     )
-    # Headquarters assigned to the user
-    # (Super Admin doesn't have one, HQ Admin/Staff must have one, Sub HQ Staff/MR can have one)
+   
     headquarters = models.ForeignKey(
         'core.Headquarters',
         on_delete=models.SET_NULL,
@@ -23,8 +22,7 @@ class User(AbstractUser):
         blank=True,
         related_name='users'
     )
-    # Sub Headquarters assigned to the user
-    # (Sub HQ Staff and MRs can be assigned directly to a Sub Headquarters)
+
     sub_headquarters = models.ForeignKey(
         'core.SubHeadquarters',
         on_delete=models.SET_NULL,

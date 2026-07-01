@@ -70,7 +70,7 @@ class HospitalAPITests(APITestCase):
         url = reverse('headquarters-list')
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        # pagination returns {"count": ..., "next": ..., "previous": ..., "results": [...]}
+        
         self.assertEqual(response.data['count'], 2)
 
         # Can create HQs
@@ -99,14 +99,14 @@ class HospitalAPITests(APITestCase):
         }, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
-        # Cannot create SubHQ in another HQ (returns 400 Bad Request since validation fails)
+       
         response = self.client.post(sub_hq_url, {
             "name": "Another HQ Sub", "headquarters": self.hq2.id, "location": "Loc"
         }, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_dashboard_api(self):
-        # Super admin sees all stats
+     
         token = self.get_jwt_token("super", "password")
         self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {token}')
         response = self.client.get(reverse('dashboard'))
@@ -116,7 +116,6 @@ class HospitalAPITests(APITestCase):
         self.assertEqual(response.data['total_doctors'], 1)
         self.assertEqual(response.data['total_mrs'], 1)
 
-        # HQ Admin sees only their own HQ stats
         token = self.get_jwt_token("hq_admin", "password")
         self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {token}')
         response = self.client.get(reverse('dashboard'))

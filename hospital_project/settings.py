@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 import os
 from pathlib import Path
+# pyrefly: ignore [missing-import]
 from dotenv import load_dotenv
 
 # Load environment variables
@@ -43,19 +44,19 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     
-    # Third-party apps
+
     'rest_framework',
     'rest_framework_simplejwt',
     'corsheaders',
     'django_filters',
     
-    # Project apps
+  
     'accounts',
     'core',
 ]
 
 MIDDLEWARE = [
-    'corsheaders.middleware.CorsMiddleware', # Put it as high as possible
+    'corsheaders.middleware.CorsMiddleware', 
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',

@@ -63,18 +63,17 @@ class RoleBasedHierarchyPermission(permissions.BasePermission):
         if not request.user or not request.user.is_authenticated:
             return False
             
-        # Super admin has bypass access
+        
         if request.user.role == Role.SUPER_ADMIN:
             return True
             
-        # Safe methods (GET, HEAD, OPTIONS) are generally allowed for authenticated users,
-        # but queryset filtering will restrict what they can actually see.
+       
         if request.method in permissions.SAFE_METHODS:
             return True
             
         user_role = request.user.role
         
-        # Identify the model class associated with this ViewSet
+       
         model_name = None
         if hasattr(view, 'queryset') and view.queryset is not None:
             model_name = view.queryset.model.__name__
@@ -84,24 +83,23 @@ class RoleBasedHierarchyPermission(permissions.BasePermission):
             except Exception:
                 pass
 
-        # 1. User management writes (Creating/Updating/Deleting users)
+       
         if model_name == 'User':
-            # Only Super Admin and HQ Admin are allowed to manage users
+          
             return user_role in [Role.SUPER_ADMIN, Role.HQ_ADMIN]
 
-        # 2. Headquarters writes (Only Super Admin can manage main HQs)
         if model_name == 'Headquarters':
             return user_role == Role.SUPER_ADMIN
 
-        # 3. SubHeadquarters writes (Super Admin and HQ Admin)
+   
         if model_name == 'SubHeadquarters':
             return user_role in [Role.SUPER_ADMIN, Role.HQ_ADMIN]
 
-        # 4. Doctor writes (Super Admin, HQ Admin, HQ Staff, Sub HQ Staff)
+        
         if model_name == 'Doctor':
             return user_role in [Role.SUPER_ADMIN, Role.HQ_ADMIN, Role.HQ_STAFF, Role.SUB_HQ_STAFF]
 
-        # 5. Visit writes (All authenticated roles can submit visits/reports)
+
         if model_name == 'Visit':
             return True
             
